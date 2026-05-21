@@ -1,5 +1,3 @@
 interface:
-  display_name: AI Course HTML Generator
-  short_description: Generate soft white 16:9 Chinese HTML course pages and integrated scrolling decks.
-  icon: sparkles
-  brand_color: "#2563EB"
+  display_name: "AI HTML Deck Builder"
+  short_description: "Plan and build polished 16:9 HTML presentation decks."

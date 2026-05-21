@@ -1,1 +1,136 @@
---- name: course-html description: generate chinese ai course html slide pages and scrolling course pages from outlines or rough content. use when the user provides ideas, an outline, lesson notes, page content, or asks to create a white, soft, minimal tech style 16:9 html presentation page, chapter page, cover page, ending page, directory page, or integrated scrolling html deck with anchor navigation, current-page highlight, lightweight progress, and content-level click animation. ---  # Course HTML Generator  Use this skill to turn Chinese course ideas, outlines, notes, or page-level content into reusable HTML presentation pages in a consistent **white, soft, minimal tech style**.  ## Core workflow  Always follow this two-step workflow unless the user explicitly asks to skip planning.  ### Step 1: Plan first and wait for confirmation  When the user provides a rough idea, topic, outline, or long text, first produce a planning draft in Chinese and stop.  The planning draft must include:  1. **课程定位**：一句话说明这套内容要解决什么问题。 2. **目标受众**：谁会看这套页面。 3. **整体结构**：建议分为哪些 PART 或章节。 4. **逐页规划表**：每页包含页码、标题、核心信息、建议视觉形式。 5. **确认问题**：请用户回复“同意”或提出修改意见后再进入 HTML 生成。  Do not generate the full HTML pages before the user confirms the plan.  ### Step 2: Generate HTML after confirmation  After the user confirms the plan, generate the requested HTML.  Default output options:  - **Single page HTML**：when the user asks for one page or a specific page. - **Multiple page HTML blocks**：when the user asks for several individual HTML files/pages. - **Integrated scrolling HTML**：when the user asks to combine many pages into one scrolling page.  ## Visual style requirements  Follow `references/style-guide.md` for all pages.  Default style keywords:  - white background - soft blue / teal / purple gradients - rounded 3xl cards - light borders and shadows - clean business tech style - Chinese typography with bold titles - 16:9 layout for Windows / projector display - no dark cyberpunk style - no overly complex glowing effects  ## Page types  Use `references/page-patterns.md` to choose the page layout.  Common page types:  - Cover page - Directory page - Chapter divider page - Content page - Comparison page - Matrix page - Process / flow page - Table page - Image showcase page - Ending page - Integrated scrolling deck  ## HTML generation rules  1. Return complete, copyable HTML code in a fenced `html` code block when the user asks for code. 2. Use Tailwind CDN and lucide icons by default:    - `https://cdn.tailwindcss.com`    - `https://unpkg.com/lucide@latest` 3. Use `html2canvas` download button only when the user wants an image export button, or when consistent with prior pages. 4. Design each standalone page as a 16:9 canvas:    - outer container: `max-w-[1536px] aspect-[16/9]`    - rounded white card background    - avoid content being clipped at top or bottom 5. Keep title sizes consistent across pages, but allow body text to shrink when content is dense. 6. Prefer fewer, clearer elements over many decorative icons. 7. Do not add extra concepts not provided by the user unless explicitly asked to expand. 8. Keep all visible text and code comments in Chinese when the user works in Chinese.  ## Integrated scrolling deck rules  When combining many HTML pages into one file:  1. Preserve the original 16:9 page designs by embedding each page as an iframe or equivalent isolated slide section. 2. Each section should behave like one presentation screen. 3. Provide only necessary interactions:    - top lightweight progress bar    - anchor navigation    - current page highlight    - keyboard page navigation    - content-level click animation 4. Do not add heavy animations that distract from the course content. 5. For stable scrolling, use the final alignment logic in `references/integrated-deck.md`. 6. If iframes are used, allow iframe content to receive clicks so content-level click animation works. 7. Ensure keyboard navigation still jumps directly to the next full page after clicking inside an iframe.  ## Content-level animation rules  Use the animation from `references/integrated-deck.md` when the user asks for “点哪里哪里轻微放大” or similar.  Expected behavior:  - Clicking a card, icon, keyword, image module, or content block makes that element subtly scale up. - A small soft ripple appears at the click location. - The whole screen should not scale. - The animation must not break keyboard page navigation or scroll behavior.  ## Quality checklist before final output  Before returning HTML, check:  - [ ] The page title is clear and not clipped. - [ ] Main content fits inside the 16:9 canvas. - [ ] Bottom summary or footer is not cut off. - [ ] Large pages still look balanced and not overcrowded. - [ ] The style matches the white, soft, minimal tech look. - [ ] Navigation and animations do not conflict in integrated pages. - [ ] Chinese text is natural and concise.  ## Usage tutorial for the user  If the user asks how to use this skill, summarize `references/usage-tutorial.md`.
+---
+name: ai-html-deck-builder
+description: "build, redesign, and refine chinese html presentation decks as 16:9 windows training slides. use when the user provides an outline, rough text, page list, or existing html template and wants a staged workflow: first clarify needs and plan pages, then choose or demo one of four bundled visual templates, then render pages one by one or in batches, and finally assemble a polished single html deck with navigation, progress, light interactions, large readable typography, minimal whitespace, and no truncation."
+---
+
+# AI HTML Deck Builder
+
+## Purpose
+Create polished HTML presentation decks for training, sharing, or internal presentations. Prioritize a staged working style: plan first, confirm the style demo, render page by page, then assemble and QA the final deck.
+
+Use Chinese by default unless the user asks otherwise.
+
+## Required Workflow
+
+### Step 1. Plan the content before rendering
+Start by turning the user's rough idea, outline, transcript, or pasted text into a clear production plan.
+
+Return a planning draft with:
+- Presentation goal and audience
+- Suggested page count
+- Part or chapter structure
+- Per-page title and page intent
+- Suggested page type, such as cover, directory, chapter divider, comparison, process, matrix, table, image showcase, summary, ending
+- Risk notes, such as pages likely to be too dense or needing source material
+
+Pause for confirmation before building pages unless the user explicitly asks to skip confirmation.
+
+### Step 2. Select and confirm the visual demo
+Before generating the full deck, select a visual template from `references/template-catalog.md` and make a small demo.
+
+Default demo options:
+- One cover page plus one content page, or
+- One representative page based on the densest content, or
+- A short standalone HTML style demo
+
+Ask the user to confirm the style direction before full rendering. If the user wants a different style, revise the demo first.
+
+### Step 3. Render pages progressively
+Render one page at a time or in small batches. For every page:
+- Keep each page close to one 16:9 screen
+- Use large readable Chinese typography
+- Avoid bottom truncation
+- Avoid excessive whitespace
+- Keep the same background, card language, typography rhythm, and interaction system within the selected template
+- Adjust density by changing layout first, not by shrinking text too much
+- For dense pages, split content or simplify hierarchy instead of forcing everything into tiny type
+
+When the user is actively reviewing, provide complete HTML for the page or batch so it can be pasted directly.
+
+### Step 4. Assemble the final deck
+After pages are accepted, combine them into one final HTML file.
+
+The final deck should include:
+- 16:9 page sections
+- Keyboard navigation where appropriate
+- Necessary scroll or page snapping only
+- Anchor jumps for directory or chapter navigation when the deck has chapters
+- Current chapter or page highlight when useful
+- Lightweight progress indicator
+- Light hover or click feedback on content cards
+- No complex animation that distracts from the presentation
+
+### Step 5. QA and fix
+Before returning final output, check for:
+- Any bottom, top, or side truncation
+- Font sizes that are too small for projection
+- Overlarge whitespace on sparse pages
+- Text blur caused by excessive transform scale or filter effects
+- Inconsistent title sizes or card spacing
+- Broken directory links, keyboard navigation, or progress indicators
+
+Use `scripts/audit_html_deck.py` when a quick structural audit is useful.
+
+## Design Standards
+
+### 16:9 screen standard
+Design for a Windows browser projected or shared on screen:
+- Target a 16:9 canvas such as 1600 by 900
+- Use `aspect-ratio: 16 / 9` where possible
+- Use one page per screen
+- Avoid relying on hidden overflow to solve density problems
+- Keep page padding balanced, generally 24 to 60 px depending on density
+
+### Typography standard
+- Main titles should be visually strong and consistent
+- Content text should remain readable at presentation distance
+- Do not shrink dense pages below comfortable reading size unless the user accepts it
+- Prefer fewer words, stronger hierarchy, and better spacing over tiny text
+
+### Interaction standard
+Use only necessary presentation interactions:
+- Directory or chapter anchor jump
+- Current page or chapter highlight
+- Lightweight progress indicator
+- Keyboard navigation or snap scroll
+- Subtle card hover or click animation
+
+Avoid:
+- Large whole-page scaling animations that make text blurry
+- Constant moving backgrounds that distract
+- Complex interactive controls unless the user specifically asks
+
+## Template Selection
+Use `references/template-catalog.md` to choose among the four bundled templates:
+- `assets/templates/template-0-final-course.html`
+- `assets/templates/template-1-blue-pink.html`
+- `assets/templates/template-2-blue-white.html`
+- `assets/templates/template-3-white-pink.html`
+
+If no style is specified, default to template 0 for formal internal training decks.
+
+## Output Modes
+
+### Planning output
+Use this structure:
+
+```markdown
+## 课程/展示规划
+### 目标与受众
+### 建议结构
+### 每页规划
+| 页码 | 标题 | 页面类型 | 核心信息 | 展示建议 |
+### 需要确认的问题
+```
+
+### Style demo output
+Return complete paste-ready HTML when the user asks for code or HTML. Keep demo short and self-contained.
+
+### Final output
+Return a single complete HTML file or a downloadable artifact when file generation is available. If returning code in chat, include the complete HTML from `<!DOCTYPE html>` through `</html>`.
+
+## Important Reminders
+- Do not jump directly to full production when the user has not confirmed the outline and visual style.
+- If user content is too long for one page, tell them and propose splitting or simplifying.
+- If the user requests updates to an existing HTML deck, preserve the accepted style and modify only the relevant pages unless they ask for a full redesign.
+- Keep the user's language, tone, and training context. For this user's decks, prefer practical, direct, non-technical wording.

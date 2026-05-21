@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 不只是聊天工具 —— 用Codex解锁十倍工作效率</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <style>
+    /* ===========================================
+         CSS CUSTOM PROPERTIES (THEME)
+         =========================================== */
+    :root {
+      /* Colors — White & Pink Gradient */
+      --bg-primary: #ffffff;
+      --bg-secondary: #fdf2f8;
+      --bg-gradient-start: #ffffff;
+      --bg-gradient-mid: #fef3c7;
+      --bg-gradient-end: #fce7f3;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --accent: #ec4899;
+      --accent-light: #f9a8d4;
+      --accent-dark: #db2777;
+      --accent-glow: rgba(236, 72, 153, 0.15);
+      
+      /* Typography */
+      --font-display: "Noto Sans SC", "Inter", sans-serif;
+      --font-body: "Noto Sans SC", "Inter", sans-serif;
+      --title-size: clamp(2rem, 6vw, 5rem);
+      --h2-size: clamp(1.5rem, 4vw, 3rem);
+      --h3-size: clamp(1rem, 2.5vw, 1.75rem);
+      --body-size: clamp(0.875rem, 1.5vw, 1.125rem);
+      --small-size: clamp(0.75rem, 1vw, 0.875rem);
+      
+      /* Spacing */
+      --slide-padding: clamp(1.5rem, 4vw, 4rem);
+      --content-gap: clamp(1rem, 2vw, 2rem);
+      
+      /* Animation */
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --duration-normal: 0.6s;
+      --duration-slow: 0.9s;
+    }
+
+    /* ===========================================
+         BASE STYLES & VIEWPORT FITTING
+         =========================================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    html {
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      line-height: 1.6;
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 50%, var(--bg-gradient-end) 100%);
+      background-attachment: fixed;
+    }
+
+    /* Slide container */
+    .slide {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .slide-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-height: 100%;
+      overflow: hidden;
+      padding: var(--slide-padding);
+      padding-right: 120px;
+    }
+
+    /* ===========================================
+         BACKGROUND DECORATIONS
+         =========================================== */
+    .bg-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .blob-1 {
+      width: 400px;
+      height: 400px;
+      background: #f9a8d4;
+      top: -100px;
+      right: -100px;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .blob-2 {
+      width: 300px;
+      height: 300px;
+      background: #fcd34d;
+      bottom: -50px;
+      left: -50px;
+      animation: float 10s ease-in-out infinite reverse;
+    }
+
+    .blob-3 {
+      width: 250px;
+      height: 250px;
+      background: #a78bfa;
+      top: 50%;
+      left: 30%;
+      animation: float 12s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, -30px) scale(1.1); }
+    }
+
+    /* ===========================================
+         ANIMATIONS
+         =========================================== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition:
+        opacity var(--duration-normal) var(--ease-out-expo),
+        transform var(--duration-normal) var(--ease-out-expo);
+    }
+
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-60px);
+      transition:
+        opacity var(--duration-normal) var(--ease-out-expo),
+        transform var(--duration-normal) var(--ease-out-expo);
+    }
+
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(60px);
+      transition:
+        opacity var(--duration-normal) var(--ease-out-expo),
+        transform var(--duration-normal) var(--ease-out-expo);
+    }
+
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.8);
+      transition:
+        opacity var(--duration-slow) var(--ease-out-back),
+        transform var(--duration-slow) var(--ease-out-back);
+    }
+
+    .reveal-blur {
+      opacity: 0;
+      filter: blur(20px);
+      transition:
+        opacity var(--duration-normal) var(--ease-out-expo),
+        filter var(--duration-normal) var(--ease-out-expo);
+    }
+
+    .slide.visible .reveal,
+    .slide.visible .reveal-left,
+    .slide.visible .reveal-right,
+    .slide.visible .reveal-scale,
+    .slide.visible .reveal-blur {
+      opacity: 1;
+      transform: translateY(0) translateX(0) scale(1);
+      filter: blur(0);
+    }
+
+    /* Stagger delays */
+    .delay-1 { transition-delay: 0.1s; }
+    .delay-2 { transition-delay: 0.2s; }
+    .delay-3 { transition-delay: 0.3s; }
+    .delay-4 { transition-delay: 0.4s; }
+    .delay-5 { transition-delay: 0.5s; }
+    .delay-6 { transition-delay: 0.6s; }
+
+    /* Hover effects */
+    .hover-scale {
+      transition: transform 0.3s var(--ease-out-back), box-shadow 0.3s ease;
+    }
+
+    .hover-scale:hover {
+      transform: scale(1.05);
+      box-shadow: 0 20px 40px var(--accent-glow);
+    }
+
+    .hover-lift {
+      transition: transform 0.3s var(--ease-out-expo), box-shadow 0.3s ease;
+    }
+
+    .hover-lift:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ===========================================
+         RIGHT SIDEBAR NAVIGATION
+         =========================================== */
+    .sidebar-nav {
+      position: fixed;
+      right: 0;
+      top: 0;
+      height: 100vh;
+      width: 100px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(236, 72, 153, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px 10px;
+    }
+
+    .nav-dots {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .nav-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(236, 72, 153, 0.3);
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-expo);
+      position: relative;
+    }
+
+    .nav-dot::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+
+    .nav-dot:hover {
+      background: var(--accent);
+      transform: scale(1.3);
+    }
+
+    .nav-dot.active {
+      background: var(--accent);
+      width: 16px;
+      height: 16px;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .nav-dot.active::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+    }
+
+    .slide-number {
+      margin-top: 20px;
+      font-size: var(--small-size);
+      color: var(--text-secondary);
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+
+    /* ===========================================
+         PROGRESS BAR
+         =========================================== */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      width: 0%;
+      z-index: 1001;
+      transition: width 0.1s linear;
+      box-shadow: 0 2px 10px var(--accent-glow);
+    }
+
+    /* ===========================================
+         TYPOGRAPHY & COMPONENTS
+         =========================================== */
+    h1 {
+      font-family: var(--font-display);
+      font-size: var(--title-size);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: var(--content-gap);
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: var(--h2-size);
+      font-weight: 700;
+      margin-bottom: var(--content-gap);
+      color: var(--text-primary);
+    }
+
+    h3 {
+      font-family: var(--font-display);
+      font-size: var(--h3-size);
+      font-weight: 600;
+      margin-bottom: 0.5em;
+      color: var(--text-primary);
+    }
+
+    p {
+      font-size: var(--body-size);
+      color: var(--text-secondary);
+      margin-bottom: 0.75em;
+    }
+
+    .subtitle {
+      font-size: clamp(1rem, 2vw, 1.5rem);
+      color: var(--accent-dark);
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: clamp(1.5rem, 3vw, 2.5rem);
+      border: 1px solid rgba(236, 72, 153, 0.1);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    }
+
+    .bullet-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .bullet-list li {
+      font-size: var(--body-size);
+      padding: 0.75em 0;
+      padding-left: 2em;
+      position: relative;
+      color: var(--text-secondary);
+    }
+
+    .bullet-list li::before {
+      content: '✨';
+      position: absolute;
+      left: 0;
+      top: 0.75em;
+    }
+
+    .check-list li::before {
+      content: '✓';
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(1.5rem, 3vw, 3rem);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.5em 1em;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white;
+      border-radius: 50px;
+      font-size: var(--small-size);
+      font-weight: 600;
+      margin-right: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(252, 211, 77, 0.1));
+      border-left: 4px solid var(--accent);
+      padding: 1.5rem;
+      border-radius: 0 12px 12px 0;
+      margin: 1rem 0;
+    }
+
+    .code-box {
+      background: #1f2937;
+      color: #e5e7eb;
+      padding: 1.5rem;
+      border-radius: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: var(--small-size);
+      overflow-x: auto;
+    }
+
+    /* ===========================================
+         TITLE SLIDE
+         =========================================== */
+    .title-slide {
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .title-slide .slide-content {
+      padding-right: 150px;
+    }
+
+    .title-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      background: rgba(236, 72, 153, 0.1);
+      padding: 0.5em 1.25em;
+      border-radius: 50px;
+      font-size: var(--small-size);
+      color: var(--accent-dark);
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .author-info {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* ===========================================
+         COMPARISON TABLES
+         =========================================== */
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .comparison-box {
+      padding: 2rem;
+      border-radius: 16px;
+    }
+
+    .comparison-box.bad {
+      background: rgba(239, 68, 68, 0.05);
+      border: 2px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .comparison-box.good {
+      background: rgba(16, 185, 129, 0.05);
+      border: 2px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .comparison-label {
+      font-size: var(--small-size);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    .comparison-box.bad .comparison-label { color: #ef4444; }
+    .comparison-box.good .comparison-label { color: #10b981; }
+
+    /* ===========================================
+         STEP INDICATORS
+         =========================================== */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      counter-reset: step;
+    }
+
+    .step {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+      position: relative;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      flex: 1;
+      padding-top: 0.5rem;
+    }
+
+    /* ===========================================
+         GRID CARDS
+         =========================================== */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .grid-card {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 1.5rem;
+      border: 1px solid rgba(236, 72, 153, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .grid-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px var(--accent-glow);
+      border-color: var(--accent);
+    }
+
+    .grid-card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    /* ===========================================
+         RESPONSIVE BREAKPOINTS
+         =========================================== */
+    @media (max-height: 700px) {
+      :root {
+        --slide-padding: clamp(0.75rem, 3vw, 2rem);
+        --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+      
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar-nav {
+        width: 70px;
+      }
+      
+      .slide-content {
+        padding-right: 90px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .sidebar-nav {
+        display: none;
+      }
+      
+      .slide-content {
+        padding-right: var(--slide-padding);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+      }
+      
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  
+/* =========================================================
+   16:9 Windows 大屏优化版 · A-Codex-Presentation
+   保留原模板白粉渐变、右侧导航、滚动翻页、柔和动效；
+   重点解决：字体偏小、留白过多、每页不满 16:9、内容截断。
+   ========================================================= */
+
+:root {
+  --deck-max-w: 1600px;
+  --deck-max-h: 900px;
+  --deck-radius: 28px;
+  --nav-w: 78px;
+
+  --title-size: clamp(4.6rem, 6.2vw, 7.5rem);
+  --h2-size: clamp(3.3rem, 4.7vw, 5.8rem);
+  --h3-size: clamp(1.75rem, 2.05vw, 2.55rem);
+  --body-size: clamp(1.32rem, 1.55vw, 1.95rem);
+  --small-size: clamp(1.02rem, 1.12vw, 1.32rem);
+
+  --slide-padding: clamp(2.1rem, 3.2vw, 3.5rem);
+  --content-gap: clamp(1.0rem, 1.6vw, 1.8rem);
+}
+
+/* 整体仍然是滚动式，但每一页改为 16:9 舞台 */
+html, body {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-snap-type: y mandatory;
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(236,72,153,0.14), transparent 30%),
+    radial-gradient(circle at 88% 86%, rgba(252,211,77,0.16), transparent 34%),
+    linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 48%, var(--bg-gradient-end) 100%);
+}
+
+.slide {
+  width: 100vw;
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 1.2vw, 20px);
+  overflow: hidden;
+}
+
+.slide-content {
+  flex: none;
+  width: min(calc(100vw - var(--nav-w) - 28px), calc(100vh * 16 / 9), var(--deck-max-w));
+  height: min(calc(100vh - 24px), calc((100vw - var(--nav-w) - 28px) * 9 / 16), var(--deck-max-h));
+  aspect-ratio: 16 / 9;
+  max-height: var(--deck-max-h);
+  max-width: var(--deck-max-w);
+  padding: clamp(34px, 3.4vw, 58px) clamp(54px, 5vw, 86px);
+  padding-right: clamp(54px, 5vw, 86px);
+  border-radius: var(--deck-radius);
+  background: rgba(255,255,255,0.70);
+  border: 1px solid rgba(255,255,255,0.84);
+  box-shadow: 0 28px 86px rgba(236, 72, 153, 0.16);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  transform-origin: center center;
+}
+
+/* 标题页不要贴左，保留原风格但更满版 */
+.title-slide {
+  justify-content: center;
+  align-items: center;
+}
+
+.title-slide .slide-content {
+  padding-right: clamp(54px, 5vw, 86px);
+  justify-content: center;
+}
+
+.title-badge {
+  font-size: clamp(1.15rem, 1.25vw, 1.5rem);
+  padding: 0.65em 1.45em;
+  margin-bottom: 1.35rem;
+}
+
+.author-info {
+  margin-top: clamp(2.3rem, 3.3vw, 4rem);
+  padding-top: clamp(1.4rem, 1.8vw, 2rem);
+}
+
+/* 字号与阅读密度 */
+h1 {
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+  margin-bottom: clamp(1.1rem, 1.6vw, 2rem);
+}
+
+h2 {
+  line-height: 1.06;
+  letter-spacing: -0.04em;
+  margin-bottom: clamp(1.05rem, 1.5vw, 1.8rem);
+}
+
+h3 {
+  line-height: 1.16;
+  margin-bottom: 0.55em;
+}
+
+p {
+  line-height: 1.46;
+}
+
+.subtitle {
+  font-size: clamp(1.55rem, 2vw, 2.55rem);
+  line-height: 1.32;
+  letter-spacing: 0.02em;
+}
+
+/* 卡片系统更大、更饱满 */
+.card,
+.grid-card,
+comparison-box,
+.comparison-box {
+  border-radius: 24px;
+}
+
+.card {
+  padding: clamp(1.7rem, 2.2vw, 2.8rem);
+  box-shadow: 0 18px 52px rgba(236, 72, 153, 0.10);
+}
+
+.card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: clamp(1.25rem, 1.7vw, 2rem);
+}
+
+.grid-card {
+  padding: clamp(1.55rem, 2vw, 2.4rem);
+  min-height: clamp(180px, 22vh, 255px);
+  box-shadow: 0 16px 46px rgba(236, 72, 153, 0.10);
+}
+
+.grid-card-icon {
+  font-size: clamp(2.65rem, 3vw, 3.7rem);
+  margin-bottom: 1.05rem;
+}
+
+.bullet-list li {
+  font-size: var(--body-size);
+  line-height: 1.38;
+  padding: 0.55em 0 0.55em 2em;
+}
+
+.bullet-list li::before {
+  top: 0.52em;
+}
+
+.check-list li::before {
+  font-size: 1.25em;
+}
+
+/* 对比页更铺满 */
+.comparison {
+  gap: clamp(1.4rem, 2vw, 2.4rem);
+  margin-top: clamp(1.1rem, 1.5vw, 1.8rem);
+}
+
+.comparison-box {
+  padding: clamp(1.55rem, 2vw, 2.5rem);
+  min-height: clamp(230px, 28vh, 330px);
+}
+
+.comparison-label {
+  font-size: clamp(1.1rem, 1.15vw, 1.35rem);
+}
+
+.steps {
+  gap: clamp(1rem, 1.3vw, 1.5rem);
+}
+
+.step {
+  gap: 1.15rem;
+}
+
+.step::before {
+  width: 54px;
+  height: 54px;
+  min-width: 54px;
+  font-size: 1.35rem;
+}
+
+.step-content {
+  font-size: clamp(1.22rem, 1.4vw, 1.72rem);
+  line-height: 1.38;
+}
+
+/* 高亮条更像总结条 */
+.highlight-box {
+  padding: clamp(1.35rem, 1.8vw, 2.2rem);
+  border-radius: 0 22px 22px 0;
+  margin: clamp(1.05rem, 1.5vw, 1.9rem) 0;
+}
+
+.highlight-box p {
+  font-size: clamp(1.5rem, 1.85vw, 2.35rem) !important;
+  line-height: 1.32;
+}
+
+/* 双栏、标签 */
+.two-col {
+  gap: clamp(1.5rem, 2.4vw, 3rem);
+}
+
+.tag {
+  font-size: clamp(1.04rem, 1.15vw, 1.35rem);
+  padding: 0.62em 1.08em;
+}
+
+/* 右侧导航更轻，避免压内容 */
+.sidebar-nav {
+  width: var(--nav-w);
+  background: rgba(255,255,255,0.68);
+  border-left: 1px solid rgba(236,72,153,0.08);
+}
+
+.nav-dots {
+  gap: 10px;
+}
+
+.nav-dot {
+  width: 10px;
+  height: 10px;
+}
+
+.nav-dot.active {
+  width: 14px;
+  height: 14px;
+}
+
+/* 背景装饰限制在页内视觉层，不干扰阅读 */
+.bg-blob {
+  filter: blur(54px);
+  opacity: 0.28;
+}
+
+/* 内容密集页自动压缩但不显小 */
+.slide.compact .slide-content {
+  padding: clamp(26px, 2.7vw, 44px) clamp(46px, 4.2vw, 72px);
+}
+
+.slide.compact h2 {
+  font-size: clamp(2.7rem, 3.8vw, 4.7rem);
+  margin-bottom: clamp(0.7rem, 1vw, 1.2rem);
+}
+
+.slide.compact h3 {
+  font-size: clamp(1.35rem, 1.65vw, 2.0rem);
+}
+
+.slide.compact p,
+.slide.compact .bullet-list li,
+.slide.compact .step-content {
+  font-size: clamp(1.02rem, 1.18vw, 1.42rem);
+  line-height: 1.34;
+}
+
+.slide.compact .grid-card,
+.slide.compact .card,
+.slide.compact .comparison-box {
+  padding: clamp(1.1rem, 1.45vw, 1.8rem);
+  min-height: auto;
+}
+
+.slide.compact .grid-card-icon {
+  font-size: clamp(2.1rem, 2.35vw, 2.8rem);
+  margin-bottom: 0.55rem;
+}
+
+.slide.compact .highlight-box p {
+  font-size: clamp(1.18rem, 1.45vw, 1.8rem) !important;
+}
+
+/* 自动缩放容器 */
+.slide-inner-fit {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform-origin: center center;
+}
+
+/* 动效保留，但避免 hover 后字糊 */
+.hover-scale:hover,
+.grid-card:hover,
+.hover-lift:hover {
+  transform: translateY(-5px);
+}
+
+.reveal,
+.reveal-left,
+.reveal-right,
+.reveal-scale,
+.reveal-blur {
+  will-change: opacity, transform;
+}
+
+/* 小屏兜底 */
+@media (max-width: 1024px) {
+  :root {
+    --nav-w: 58px;
+  }
+
+  .slide {
+    padding: 0;
+  }
+
+  .slide-content {
+    width: calc(100vw - var(--nav-w));
+    height: min(100vh, calc((100vw - var(--nav-w)) * 9 / 16));
+    border-radius: 0;
+  }
+
+  .sidebar-nav {
+    width: var(--nav-w);
+  }
+}
+
+</style>
+</head>
+<body>
+  <!-- Progress Bar -->
+  <div class="progress-bar" id="progressBar"></div>
+  
+  <!-- Right Sidebar Navigation -->
+  <nav class="sidebar-nav">
+    <div class="nav-dots" id="navDots"></div>
+    <div class="slide-number"><span id="currentSlide">1</span>/<span id="totalSlides">20</span></div>
+  </nav>
+
+  <!-- Slide 1: Title -->
+  <section class="slide title-slide" id="slide-1">
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="slide-content">
+      <div class="title-badge reveal">🎯 内部培训分享</div>
+      <h1 class="reveal delay-1">AI 不只是聊天工具</h1>
+      <p class="subtitle reveal delay-2">—— 用Codex解锁十倍工作效率</p>
+      <div class="author-info reveal delay-3">
+        <p style="font-size: var(--body-size); color: var(--text-primary); font-weight: 500; margin: 0;">演讲人：行政部 叶婷</p>
+        <p style="font-size: var(--small-size); margin: 0.5rem 0 0 0;">日期：2026年5月</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 2: Table of Contents -->
+  <section class="slide" id="slide-2">
+    <div class="bg-blob blob-3"></div>
+    <div class="slide-content">
+      <h2 class="reveal">📋 目录</h2>
+      <div class="card-grid" style="margin-top: 1.5rem;">
+        <div class="grid-card reveal delay-1 hover-scale">
+          <div class="grid-card-icon">1️⃣</div>
+          <h3>重新认识AI</h3>
+          <p>从聊天到生产力</p>
+        </div>
+        <div class="grid-card reveal delay-2 hover-scale">
+          <div class="grid-card-icon">2️⃣</div>
+          <h3>主角登场</h3>
+          <p>认识Codex</p>
+        </div>
+        <div class="grid-card reveal delay-3 hover-scale">
+          <div class="grid-card-icon">3️⃣</div>
+          <h3>实战演练</h3>
+          <p>行政必看案例</p>
+        </div>
+        <div class="grid-card reveal delay-4 hover-scale">
+          <div class="grid-card-icon">4️⃣</div>
+          <h3>辅助工具</h3>
+          <p>Cursor & Cloud Code</p>
+        </div>
+        <div class="grid-card reveal delay-5 hover-scale">
+          <div class="grid-card-icon">5️⃣</div>
+          <h3>上手指南</h3>
+          <p>安全边界与行动</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 3: Do we really use AI? -->
+  <section class="slide" id="slide-3">
+    <div class="slide-content">
+      <h2 class="reveal">🤔 我们真的会用AI了吗？</h2>
+      <ul class="bullet-list" style="margin-top: 1.5rem;">
+        <li class="reveal delay-1">现状：多数同事已会用DeepSeek、豆包写简单文档</li>
+        <li class="reveal delay-2">但AI能做的远不止"聊天"和"生成文字"</li>
+        <li class="reveal delay-3"><strong style="color: var(--accent-dark);">真正的效率炸弹</strong>——让AI帮你写代码、自动化办公、搭建小工具</li>
+        <li class="reveal delay-4">即使你是行政、市场、销售，<strong style="color: var(--accent-dark);">零编程基础也能上手</strong></li>
+      </ul>
+      <div class="highlight-box reveal delay-5">
+        <p style="font-size: var(--h3-size); color: var(--accent-dark); font-weight: 700; margin: 0;">📌 核心观点：从"问AI"升级到"让AI干活"</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 4: Why Codex -->
+  <section class="slide" id="slide-4">
+    <div class="bg-blob blob-1" style="width: 300px; height: 300px;"></div>
+    <div class="slide-content">
+      <h2 class="reveal">💡 为什么Codex值得你关注？</h2>
+      <div class="two-col" style="margin-top: 1.5rem;">
+        <div class="reveal-left delay-1">
+          <div class="card">
+            <h3>办公室痛点</h3>
+            <ul class="bullet-list check-list">
+              <li>大量重复性工作</li>
+              <li>数据处理、文件整理</li>
+              <li>报表生成、信息录入</li>
+              <li>手工操作耗时易错</li>
+              <li>找IT开发又要排期</li>
+            </ul>
+          </div>
+        </div>
+        <div class="reveal-right delay-2">
+          <div class="card">
+            <h3 style="color: var(--accent-dark);">Codex解决方案</h3>
+            <ul class="bullet-list check-list">
+              <li>用中文下命令</li>
+              <li>AI自动生成代码</li>
+              <li>直接运行即可</li>
+              <li>10分钟搞定半天工作</li>
+              <li>不用学编程语言</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="highlight-box reveal delay-3" style="margin-top: 2rem;">
+        <p style="font-size: var(--h3-size); text-align: center; margin: 0;">门槛比你想象的低，效率比你预想的高 🚀</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 5: What is Codex -->
+  <section class="slide" id="slide-5">
+    <div class="slide-content">
+      <h2 class="reveal">⚡ Codex：你的私人编程助理</h2>
+      <div class="card-grid" style="margin-top: 1.5rem;">
+        <div class="grid-card reveal delay-1 hover-scale">
+          <div class="grid-card-icon">🧠</div>
+          <h3>Codex是什么？</h3>
+          <p>OpenAI推出的代码生成引擎，GPT-4已深度集成</p>
+        </div>
+        <div class="grid-card reveal delay-2 hover-scale">
+          <div class="grid-card-icon">📝</div>
+          <h3>怎么用？</h3>
+          <p>打开ChatGPT(GPT-4)，直接说"写一段Python代码"</p>
+        </div>
+        <div class="grid-card reveal delay-3 hover-scale">
+          <div class="grid-card-icon">🎯</div>
+          <h3>擅长什么？</h3>
+          <p>文件处理、数据提取、自动化邮件、报表生成</p>
+        </div>
+      </div>
+      <div class="highlight-box reveal delay-4" style="margin-top: 2rem;">
+        <p style="font-size: var(--h3-size); color: var(--accent-dark); font-weight: 700; margin: 0; text-align: center;">
+          📌 一句话总结：Codex就是你的"代码翻译官"，中文进去，代码出来
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 6: Practice 1 - File Renaming -->
+  <section class="slide" id="slide-6">
+    <div class="bg-blob blob-2" style="width: 250px; height: 250px;"></div>
+    <div class="slide-content">
+      <h2 class="reveal">📁 Codex实战①：批量合同整理</h2>
+      <p class="subtitle reveal delay-1">场景：每月50份PDF合同，需按"甲方名称+签订日期"重命名归档</p>
+      <div class="comparison" style="margin-top: 1.5rem;">
+        <div class="comparison-box bad reveal-left delay-2">
+          <div class="comparison-label">❌ 传统做法</div>
+          <p>逐个右键重命名，2小时起步，眼花手酸</p>
+        </div>
+        <div class="comparison-box good reveal-right delay-3">
+          <div class="comparison-label">✅ Codex做法（5分钟）</div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-content">打开ChatGPT，输入："写一段Python代码，读取D:\合同\文件夹下所有PDF文件..."</div>
+            </div>
+            <div class="step">
+              <div class="step-content">复制代码，粘贴到电脑，双击运行</div>
+            </div>
+            <div class="step">
+              <div class="step-content">50个文件瞬间整齐排列</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="highlight-box reveal delay-4" style="margin-top: 1.5rem;">
+        <p style="margin: 0; font-weight: 600;">✅ 你只需要：会复制、会粘贴、会双击</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 7: Practice 2 - Data Extraction -->
+  <section class="slide" id="slide-7">
+    <div class="slide-content">
+      <h2 class="reveal">📊 Codex实战②：客户信息提取</h2>
+      <p class="subtitle reveal delay-1">场景：100份Word合同，需提取所有客户名称、联系方式到Excel</p>
+      <div class="comparison" style="margin-top: 1.5rem;">
+        <div class="comparison-box bad reveal-left delay-2">
+          <div class="comparison-label">❌ 传统做法</div>
+          <p>逐个打开、复制、粘贴，一上午没了</p>
+        </div>
+        <div class="comparison-box good reveal-right delay-3">
+          <div class="comparison-label">✅ Codex做法（3分钟）</div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-content">在ChatGPT中告诉Codex你的需求</div>
+            </div>
+            <div class="step">
+              <div class="step-content">运行代码，Excel自动生成</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="highlight-box reveal delay-4" style="margin-top: 1.5rem;">
+        <p style="margin: 0;">💡 举一反三：同样的方法，可以批量提取报价单、简历、问卷中的任何信息</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 8: Practice 3 - Email -->
+  <section class="slide" id="slide-8">
+    <div class="bg-blob blob-3" style="width: 200px; height: 200px;"></div>
+    <div class="slide-content">
+      <h2 class="reveal">📧 Codex实战③：邮件批量生成</h2>
+      <p class="subtitle reveal delay-1">场景：通知50位供应商更新资质文件，每个邮件需带对方公司名和截止日期</p>
+      <div class="comparison" style="margin-top: 1.5rem;">
+        <div class="comparison-box bad reveal-left delay-2">
+          <div class="comparison-label">❌ 传统做法</div>
+          <p>逐个复制粘贴修改，1小时+</p>
+        </div>
+        <div class="comparison-box good reveal-right delay-3">
+          <div class="comparison-label">✅ Codex做法（10分钟）</div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-content">准备Excel：列名"供应商名""联系人""邮箱""截止日期"</div>
+            </div>
+            <div class="step">
+              <div class="step-content">告诉Codex读取Excel，生成邮件</div>
+            </div>
+            <div class="step">
+              <div class="step-content">运行，批量生成邮件，一键导入Outlook发送</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="highlight-box reveal delay-4" style="margin-top: 1.5rem;">
+        <p style="margin: 0; font-weight: 600;">📧 50封邮件，10分钟搞定，零出错</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 9: Practice 4 - Reports -->
+  <section class="slide" id="slide-9">
+    <div class="slide-content">
+      <h2 class="reveal">📈 Codex实战④：数据报表一键生成</h2>
+      <p class="subtitle reveal delay-1">场景：行政季度满意度调查，200份Excel结果需统计平均分、各部门对比</p>
+      <div class="comparison" style="margin-top: 1.5rem;">
+        <div class="comparison-box bad reveal-left delay-2">
+          <div class="comparison-label">❌ 传统做法</div>
+          <p>数小时拉公式、做透视表、画图表</p>
+        </div>
+        <div class="comparison-box good reveal-right delay-3">
+          <div class="comparison-label">✅ Codex做法（5分钟）</div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-content">在ChatGPT中输入："写一段Python代码，读取D:\调查结果.xlsx..."</div>
+            </div>
+            <div class="step">
+              <div class="step-content">运行，图表和统计结果一次性输出</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="highlight-box reveal delay-4" style="margin-top: 1.5rem;">
+        <p style="margin: 0;">📊 即使完全不懂Excel函数，跟着AI提示就能做出专业报表</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 10: Prompt Tips -->
+  <section class="slide" id="slide-10">
+    <div class="bg-blob blob-1" style="width: 280px; height: 280px;"></div>
+    <div class="slide-content">
+      <h2 class="reveal">🎯 Codex写好提示词的秘诀</h2>
+      <div class="card-grid" style="margin-top: 1.5rem;">
+        <div class="grid-card reveal delay-1 hover-lift">
+          <div class="grid-card-icon">🎭</div>
+          <h3>明确角色</h3>
+          <p>"你是一个Python编程专家..."</p>
+        </div>
+        <div class="grid-card reveal delay-2 hover-lift">
+          <div class="grid-card-icon">📋</div>
+          <h3>给出上下文</h3>
+          <p>"我有一个Excel文件，放在D盘，列名是..."</p>
+        </div>
+        <div class="grid-card reveal delay-3 hover-lift">
+          <div class="grid-card-icon">📤</div>
+          <h3>指定输出</h3>
+          <p>"请输出完整的Python代码，加上中文注释"</p>
+        </div>
+        <div class="grid-card reveal delay-4 hover-lift">
+          <div class="grid-card-icon">💡</div>
+          <h3>提供例子</h3>
+          <p>"如果公司名是'阿里巴巴'，输出格式应为..."</p>
+        </div>
+      </div>
+      <div class="comparison" style="margin-top: 1.5rem;">
+        <div class="comparison-box bad reveal-left delay-5">
+          <div class="comparison-label">❌ 不好的例子</div>
+          <p>"帮我处理文件"</p>
+        </div>
+        <div class="comparison-box good reveal-right delay-5">
+          <div class="comparison-label">✅ 好的例子</div>
+          <p>"写一个Python脚本，把D盘'文档'文件夹下所有.docx文件转换为PDF"</p>
+        </div>
+      </div>
+      <div class="highlight-box reveal delay-6" style="margin-top: 1rem;">
+        <p style="margin: 0; font-weight: 600; text-align: center;">📌 秘诀：描述越具体，代码越准确</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 11: Cursor -->
+  <section class="slide" id="slide-11">
+    <div class="slide-content">
+      <h2 class="reveal">⚙️ 辅助工具①：Cursor —— 像聊天一样写代码</h2>
+      <div class="two-col" style="margin-top: 1.5rem;">
+        <div class="reveal-left delay-1">
+          <div class="card">
+            <h3>Cursor是什么？</h3>
+            <ul class="bullet-list check-list">
+              <li>AI原生代码编辑器（基于VS Code）</li>
+              <li>安装即用</li>
+              <li>按 Ctrl+K 打开对话框</li>
+              <li>用中文描述需求</li>
+              <li>AI自动生成代码，并解释每一行</li>
+            </ul>
+          </div>
+        </div>
+        <div class="reveal-right delay-2">
+          <div class="card">
+            <h3 style="color: var(--accent-dark);">行政适用场景</h3>
+            <ul class="bullet-list check-list">
+              <li>想要一个可视化界面</li>
+              <li>需要反复修改调试的脚本</li>
+              <li>边写边看效果的需求</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="highlight-box reveal delay-3" style="margin-top: 1.5rem;">
+        <p style="margin: 0;">💡 和Codex的关系：Codex生成代码片段，Cursor帮你管理和运行整个项目</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 12: Cloud Code -->
+  <section class="slide" id="slide-12">
+    <div class="bg-blob blob-2" style="width: 220px; height: 220px;"></div>
+    <div class="slide-content">
+      <h2 class="reveal">☁️ 辅助工具②：Cloud Code —— 搭建专属小应用</h2>
+      <div class="two-col" style="margin-top: 1.5rem;">
+        <div class="reveal-left delay-1">
+          <div class="card">
+            <h3>Cloud Code是什么？</h3>
+            <ul class="bullet-list check-list">
+              <li>Google Cloud的AI开发插件</li>
+              <li>直接开发并部署到云端</li>
+              <li>生成可访问的网址</li>
+            </ul>
+          </div>
+          <div class="card" style="margin-top: 1rem;">
+            <h3 style="color: var(--accent-dark);">行政适用场景</h3>
+            <div class="tag">会议室预约</div>
+            <div class="tag">物品领用</div>
+            <div class="tag">FAQ机器人</div>
+            <div class="tag">问卷收集</div>
+          </div>
+        </div>
+        <div class="reveal-right delay-2">
+          <div class="card">
+            <h3>🌟 实战案例：行政问答机器人</h3>
+            <div class="steps">
+              <div class="step">
+                <div class="step-content">收集常见问题（请假流程、报销规范）和标准答案</div>
+              </div>
+              <div class="step">
+                <div class="step-content">在Cloud Code中用AI生成问答网页</div>
+              </div>
+              <div class="step">
+                <div class="step-content">部署后链接发到群里，同事自助查询</div>
+              </div>
+            </div>
+            <p style="margin-top: 1rem; color: var(--accent-dark); font-weight: 600;">24小时在线，行政从此不用当"复读机" 🎉</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 13: Quick Reference 1 -->
+  <section class="slide" id="slide-13">
+    <div class="slide-content">
+      <h2 class="reveal">📖 工作场景速查手册①</h2>
+      <div class="card-grid" style="margin-top: 1.5rem;">
+        <div class="grid-card reveal delay-1 hover-scale">
+          <div class="grid-card-icon">📝</div>
+          <h3>会议纪要智能排版</h3>
+          <div class="comparison-label" style="color: #ef4444; margin-top: 0.5rem;">传统</div>
+          <p style="font-size: var(--small-size);">录音→手动转文字→整理格式→发送（1小时）</p>
+          <div class="comparison-label" style="color: #10b981; margin-top: 0.5rem;">AI版</div>
+          <p style="font-size: var(--small-size);">飞书/钉钉转文字→ChatGPT整理→直接发送（5分钟）</p>
+        </div>
+        <div class="grid-card reveal delay-2 hover-scale">
+          <div class="grid-card-icon">📊</div>
+          <h3>数据清洗与可视化</h3>
+          <div class="comparison-label" style="color: #ef4444; margin-top: 0.5rem;">传统</div>
+          <p style="font-size: var(--small-size);">Excel拉公式、透视表（数小时）</p>
+          <div class="comparison-label" style="color: #10b981; margin-top: 0.5rem;">AI版</div>
+          <p style="font-size: var(--small-size);">把Excel拖给Cursor，描述需求，AI生成代码（5分钟）</p>
+        </div>
+        <div class="grid-card reveal delay-3 hover-scale">
+          <div class="grid-card-icon">📁</div>
+          <h3>文件格式批量转换</h3>
+          <div class="comparison-label" style="color: #ef4444; margin-top: 0.5rem;">传统</div>
+          <p style="font-size: var(--small-size);">逐个打开另存为</p>
+          <div class="comparison-label" style="color: #10b981; margin-top: 0.5rem;">AI版</div>
+          <p style="font-size: var(--small-size);">Codex写脚本，一键转换100个文件</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 14: Quick Reference 2 -->
+  <section class="slide" id="slide-14">
+    <div class="bg-blob blob-3" style="width: 180px; height: 180px;"></div>
+    <div class="slide-content">
+      <h2 class="reveal">📖 工作场景速查手册②</h2>
+      <div class="card-grid" style="margin-top: 1.5rem;">
+        <div class="grid-card reveal delay-1 hover-scale">
+          <div class="grid-card-icon">💬</div>
+          <h3>内部知识库搭建</h3>
+          <p style="color: var(--text-secondary);">痛点：新人总问重复问题</p>
+          <p style="margin-top: 0.5rem; color: var(--accent-dark); font-weight: 600;">AI方案：Cloud Code搭建FAQ机器人，24小时自助查询</p>
+        </div>
+        <div class="grid-card reveal delay-2 hover-scale">
+          <div class="grid-card-icon">📢</div>
+          <h3>行政通知自动生成</h3>
+          <p style="color: var(--text-secondary);">传统：每次手动拟通知、排版、发送</p>
+          <p style="margin-top: 0.5rem; color: var(--accent-dark); font-weight: 600;">AI方案：ChatGPT一次性生成通知模板+Codex批量发送</p>
+        </div>
+        <div class="grid-card reveal delay-3 hover-scale">
+          <div class="grid-card-icon">👥</div>
+          <h3>访客登记自动化</h3>
+          <p style="color: var(--text-secondary);">传统：纸质登记+手动录入</p>
+          <p style="margin-top: 0.5rem; color: var(--accent-dark); font-weight: 600;">AI方案：Cloud Code生成登记页面，数据自动汇总到表格</p>
+        </div>
+      </div>
+      <div class="highlight-box reveal delay-4" style="margin-top: 2rem;">
+        <p style="font-size: var(--h3-size); color: var(--accent-dark); font-weight: 700; margin: 0; text-align: center;">
+          📌 原则：任何重复做超过3次的工作，都值得用AI自动化
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 15: Life Hacks -->
+  <section class="slide" id="slide-15">
+    <div class="slide-content">
+      <h2 class="reveal">🏠 生活场景小妙招</h2>
+      <div class="card-grid" style="margin-top: 1.5rem;">
+        <div class="grid-card reveal delay-1 hover-lift">
+          <div class="grid-card-icon">💰</div>
+          <h3>家庭开支分析</h3>
+          <ul class="bullet-list" style="margin-top: 0.5rem;">
+            <li>支付宝/微信导出账单CSV</li>
+            <li>告诉Codex：按分类统计每月支出，生成饼图</li>
+            <li>每月自动分析，理财小白也能专业管钱</li>
+          </ul>
+        </div>
+        <div class="grid-card reveal delay-2 hover-lift">
+          <div class="grid-card-icon">✈️</div>
+          <h3>旅行攻略一键生成</h3>
+          <ul class="bullet-list" style="margin-top: 0.5rem;">
+            <li>DeepSeek问：成都5天4晚家庭游，儿童友好景点</li>
+            <li>AI生成文字攻略+封面图+天气提醒</li>
+            <li>输出PDF分享给家人，人人夸你贴心</li>
+          </ul>
+        </div>
+        <div class="grid-card reveal delay-3 hover-lift">
+          <div class="grid-card-icon">🛒</div>
+          <h3>购物比价助手</h3>
+          <ul class="bullet-list" style="margin-top: 0.5rem;">
+            <li>让Codex写脚本，抓取商品价格信息</li>
+            <li>自动汇总比价</li>
+            <li>省钱省时间</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 16: Getting Started -->
+  <section class="slide" id="slide-16">
+    <div class="bg-blob blob-1" style="width: 250px; height: 250px;"></div>
+    <div class="slide-content">
+      <h2 class="reveal">🚀 小白上手三部曲</h2>
+      <div class="two-col" style="margin-top: 1.5rem;">
+        <div>
+          <div class="card reveal-left delay-1">
+            <h3>第一步：心态准备</h3>
+            <ul class="bullet-list check-list">
+              <li>别怕代码，AI是你的翻译官</li>
+              <li>你只管用中文描述需求</li>
+            </ul>
+          </div>
+          <div class="card reveal-left delay-2" style="margin-top: 1rem;">
+            <h3>第二步：环境准备</h3>
+            <ul class="bullet-list check-list">
+              <li>安装Python（官网一键安装）</li>
+              <li>注册ChatGPT账号（DeepSeek也可）</li>
+              <li>安装Cursor（官网下载，免费）</li>
+            </ul>
+          </div>
+          <div class="card reveal-left delay-3" style="margin-top: 1rem;">
+            <h3>第三步：首次尝试</h3>
+            <ul class="bullet-list check-list">
+              <li>从本PPT任一案例复制提示词开始</li>
+              <li>运行成功一个，信心就来了</li>
+              <li>遇到报错？直接把错误信息丢回给AI</li>
+            </ul>
+          </div>
+        </div>
+        <div class="reveal-right delay-4">
+          <div class="highlight-box" style="height: 100%; display: flex; flex-direction: column; justify-content: center;">
+            <p style="font-size: var(--h2-size); color: var(--accent-dark); font-weight: 900; text-align: center; margin: 0;">
+              🎯
+            </p>
+            <p style="font-size: var(--h3-size); text-align: center; margin-top: 1rem; font-weight: 700;">
+              今天就能完成你的第一个自动化脚本！
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 17: Safety -->
+  <section class="slide" id="slide-17">
+    <div class="slide-content">
+      <h2 class="reveal">🔒 安全与边界</h2>
+      <div class="card-grid" style="margin-top: 1.5rem;">
+        <div class="grid-card reveal delay-1 hover-scale">
+          <div class="grid-card-icon">🔐</div>
+          <h3>数据隐私</h3>
+          <p>涉及员工信息、合同、财务数据，优先使用本地运行（本地Python+Cursor）</p>
+          <p style="margin-top: 0.5rem; color: var(--accent-dark);">不要将敏感数据上传到公有云AI平台</p>
+        </div>
+        <div class="grid-card reveal delay-2 hover-scale">
+          <div class="grid-card-icon">👀</div>
+          <h3>代码审查</h3>
+          <p>AI生成的代码执行前最好扫一眼</p>
+          <p style="margin-top: 0.5rem; color: var(--accent-dark);">确保不会误删文件、误发邮件</p>
+        </div>
+        <div class="grid-card reveal delay-3 hover-scale">
+          <div class="grid-card-icon">✅</div>
+          <h3>合规提醒</h3>
+          <p>批量发送邮件前，确认符合公司信息安全规定</p>
+          <p style="margin-top: 0.5rem; color: var(--accent-dark);">搭建内部网页时，设置访问密码，不对外开放</p>
+        </div>
+        <div class="grid-card reveal delay-4 hover-scale">
+          <div class="grid-card-icon">🛡️</div>
+          <h3>权限控制</h3>
+          <p>自动化脚本仅在个人工作目录运行</p>
+          <p style="margin-top: 0.5rem; color: var(--accent-dark);">涉及共享文件夹操作前，先做备份</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 18: Complete Case -->
+  <section class="slide" id="slide-18">
+    <div class="bg-blob blob-2" style="width: 200px; height: 200px;"></div>
+    <div class="slide-content">
+      <h2 class="reveal">🎬 完整案例：行政周报自动生成器</h2>
+      <p class="subtitle reveal delay-1">需求：每周五收集各部门周报，自动合并为总周报</p>
+      <div class="two-col" style="margin-top: 1.5rem;">
+        <div class="reveal-left delay-2">
+          <div class="card">
+            <h3>实现步骤</h3>
+            <div class="steps">
+              <div class="step">
+                <div class="step-content">各部门周报放共享文件夹（统一命名规则）</div>
+              </div>
+              <div class="step">
+                <div class="step-content">用Codex生成脚本：读取所有文档，提取"本周重点""下周计划"段落</div>
+              </div>
+              <div class="step">
+                <div class="step-content">合并为一个Word文档，自动添加封面和目录</div>
+              </div>
+              <div class="step">
+                <div class="step-content">可选：自动发送邮件给经理</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="reveal-right delay-3">
+          <div class="comparison-box bad">
+            <div class="comparison-label">😫 以前</div>
+            <p style="font-size: var(--h3-size);">周五下午手动整理</p>
+            <p style="font-size: var(--h3-size); font-weight: 700; color: #ef4444;">加班2小时</p>
+          </div>
+          <div class="comparison-box good" style="margin-top: 1rem;">
+            <div class="comparison-label">🎉 现在</div>
+            <p style="font-size: var(--h3-size);">一键执行</p>
+            <p style="font-size: var(--h3-size); font-weight: 700; color: #10b981;">5分钟审核发送</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 19: Summary & Action -->
+  <section class="slide" id="slide-19">
+    <div class="slide-content">
+      <h2 class="reveal">📝 总结与行动清单</h2>
+      <div class="two-col" style="margin-top: 1.5rem;">
+        <div class="reveal-left delay-1">
+          <div class="card">
+            <h3>今天你学到了</h3>
+            <ul class="bullet-list check-list">
+              <li>AI不只是聊天工具，Codex让你用中文指挥代码</li>
+              <li>文件处理、数据统计、邮件发送…重复工作都能自动化</li>
+              <li>零基础也能上手，关键是迈出第一步</li>
+            </ul>
+          </div>
+        </div>
+        <div class="reveal-right delay-2">
+          <div class="card">
+            <h3 style="color: var(--accent-dark);">你的行动清单</h3>
+            <div class="steps">
+              <div class="step">
+                <div class="step-content">打开ChatGPT，复制第6页的提示词，完成第一次文件批量处理</div>
+              </div>
+              <div class="step">
+                <div class="step-content">找出你工作中最重复的一件事，用Codex试着解决</div>
+              </div>
+              <div class="step">
+                <div class="step-content">把你的成功案例分享给同事</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="highlight-box reveal delay-3" style="margin-top: 2rem;">
+        <p style="font-size: var(--h3-size); text-align: center; margin: 0; font-weight: 700;">
+          📢 下周五午餐分享会，带上你的AI小成果！
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 20: Thank You -->
+  <section class="slide title-slide" id="slide-20">
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-3" style="left: 10%;"></div>
+    <div class="slide-content">
+      <h1 class="reveal-scale">感谢聆听 🌸</h1>
+      <p class="subtitle reveal delay-1">让我们一起，把AI变成最得力的助手</p>
+      <div class="author-info reveal delay-2">
+        <p style="font-size: var(--body-size); color: var(--text-primary); font-weight: 500; margin: 0;">交流联系：行政部 叶婷</p>
+        <p style="font-size: var(--body-size); margin: 0.5rem 0 0 0; color: var(--accent-dark); font-weight: 600;">PPT与Codex提示词模板领取：联系行政部</p>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    /* ===========================================
+         SLIDE PRESENTATION CONTROLLER
+         =========================================== */
+    class SlidePresentation {
+      constructor() {
+        this.slides = document.querySelectorAll('.slide');
+        this.currentSlide = 0;
+        this.totalSlides = this.slides.length;
+        
+        this.setupIntersectionObserver();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupScroll();
+        this.setupProgressBar();
+        this.setupNavDots();
+        
+        document.getElementById('totalSlides').textContent = this.totalSlides;
+      }
+
+
+      prepareSlideFitWrappers() {
+        this.slides.forEach((slide) => {
+          if (slide.querySelector(':scope > .slide-content > .slide-inner-fit')) return;
+
+          const content = slide.querySelector(':scope > .slide-content');
+          if (!content) return;
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'slide-inner-fit';
+
+          Array.from(content.childNodes).forEach((node) => {
+            wrapper.appendChild(node);
+          });
+
+          content.appendChild(wrapper);
+
+          const density = wrapper.innerText.replace(/\s+/g, '').length;
+          const cardCount = wrapper.querySelectorAll('.grid-card, .card, .comparison-box, .step, .bullet-list li, .tag').length;
+          if (density > 360 || cardCount >= 8) {
+            slide.classList.add('compact');
+          }
+        });
+      }
+
+      fitSlideContent(slide) {
+        const content = slide.querySelector(':scope > .slide-content');
+        const wrapper = slide.querySelector(':scope > .slide-content > .slide-inner-fit');
+        if (!content || !wrapper) return;
+
+        wrapper.style.transform = 'none';
+
+        const contentRect = content.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const availableW = contentRect.width - 4;
+        const availableH = contentRect.height - 4;
+
+        const scaleW = availableW / wrapperRect.width;
+        const scaleH = availableH / wrapper.scrollHeight;
+        const scale = Math.min(1, scaleW, scaleH);
+
+        if (scale < 0.998) {
+          wrapper.style.transform = `scale(${scale})`;
+        }
+      }
+
+      fitCurrentSlide() {
+        this.fitSlideContent(this.slides[this.currentSlide]);
+      }
+
+
+      setupIntersectionObserver() {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry, index) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                this.currentSlide = Array.from(this.slides).indexOf(entry.target);
+                this.updateUI();
+              }
+            });
+          },
+          { threshold: 0.5 }
+        );
+
+        this.slides.forEach((slide) => observer.observe(slide));
+        
+        // Mark first slide as visible immediately
+        if (this.slides[0]) {
+          this.slides[0].classList.add('visible');
+        }
+      }
+
+      setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+            e.preventDefault();
+            this.goToNext();
+          } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp') {
+            e.preventDefault();
+            this.goToPrev();
+          } else if (e.key >= '1' && e.key <= '9') {
+            const slideNum = parseInt(e.key) - 1;
+            if (slideNum < this.totalSlides) {
+              this.goToSlide(slideNum);
+            }
+          }
+        });
+      }
+
+      setupTouchNav() {
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', (e) => {
+          touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+          touchEndY = e.changedTouches[0].screenY;
+          this.handleSwipe();
+        }, { passive: true });
+
+        this.handleSwipe = () => {
+          const diff = touchStartY - touchEndY;
+          if (Math.abs(diff) > 50) {
+            if (diff > 0) {
+              this.goToNext();
+            } else {
+              this.goToPrev();
+            }
+          }
+        };
+      }
+
+      setupScroll() {
+        let isScrolling = false;
+        
+        window.addEventListener('wheel', (e) => {
+          if (isScrolling) return;
+          
+          isScrolling = true;
+          
+          if (e.deltaY > 0) {
+            this.goToNext();
+          } else {
+            this.goToPrev();
+          }
+          
+          setTimeout(() => {
+            isScrolling = false;
+          }, 500);
+        }, { passive: false });
+      }
+
+      setupProgressBar() {
+        window.addEventListener('scroll', () => {
+          this.updateProgressBar();
+        });
+        this.updateProgressBar();
+      }
+
+      updateProgressBar() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+      }
+
+      setupNavDots() {
+        const navDots = document.getElementById('navDots');
+        navDots.innerHTML = '';
+        
+        this.slides.forEach((slide, index) => {
+          const dot = document.createElement('div');
+          dot.className = 'nav-dot' + (index === 0 ? ' active' : '');
+          dot.title = '第 ' + (index + 1) + ' 页';
+          dot.addEventListener('click', () => this.goToSlide(index));
+          navDots.appendChild(dot);
+        });
+      }
+
+      goToNext() {
+        if (this.currentSlide < this.totalSlides - 1) {
+          this.goToSlide(this.currentSlide + 1);
+        }
+      }
+
+      goToPrev() {
+        if (this.currentSlide > 0) {
+          this.goToSlide(this.currentSlide - 1);
+        }
+      }
+
+      goToSlide(index) {
+        if (index >= 0 && index < this.totalSlides) {
+          this.slides[index].scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+
+      updateUI() {
+        // Update nav dots
+        const dots = document.querySelectorAll('.nav-dot');
+        dots.forEach((dot, index) => {
+          dot.classList.toggle('active', index === this.currentSlide);
+        });
+        
+        // Update slide number
+        document.getElementById('currentSlide').textContent = this.currentSlide + 1;
+        requestAnimationFrame(() => this.fitCurrentSlide());
+      }
+    }
+
+    // Initialize presentation
+    document.addEventListener('DOMContentLoaded', () => {
+      const deck = new SlidePresentation();
+      window.addEventListener('resize', () => deck.fitCurrentSlide());
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 不只是聊天工具</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #2563eb;
+            --light-blue: #dbeafe;
+            --white: #ffffff;
+            --dark-blue: #1e40af;
+            --gradient-start: #ffffff;
+            --gradient-end: #bfdbfe;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Inter', sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            height: 100vh;
+        }
+
+        .presentation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+
+        .slides-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 50px 80px;
+            overflow-y: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateY(0);
+            z-index: 10;
+        }
+
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        /* 封面页样式 */
+        .cover-slide {
+            text-align: center;
+        }
+
+        .cover-title {
+            font-size: 4.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            animation: titleFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes titleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .cover-subtitle {
+            font-size: 2rem;
+            color: #475569;
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        .cover-speaker {
+            font-size: 1.4rem;
+            color: #64748b;
+            margin-top: 20px;
+        }
+
+        .cover-date {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        /* 目录页样式 */
+        .toc-slide h2 {
+            font-size: 3.2rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 30px;
+        }
+
+        .toc-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .toc-item {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 16px 24px;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border-left: 4px solid #3b82f6;
+            backdrop-filter: blur(10px);
+        }
+
+        .toc-item:hover {
+            transform: translateX(10px) scale(1.02);
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.2);
+        }
+
+        .toc-item-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 15px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* 通用内容页样式 */
+        .content-slide h2 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 24px;
+        }
+
+        .content-slide .subtitle {
+            font-size: 1.6rem;
+            color: #475569;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .content-list {
+            list-style: none;
+        }
+
+        .content-list li {
+            font-size: 1.35rem;
+            color: #334155;
+            margin-bottom: 14px;
+            padding-left: 40px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .content-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        /* 实战案例样式 */
+        .scenario-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 28px 32px;
+            margin-bottom: 18px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .scenario-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.15);
+        }
+
+        .scenario-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 14px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 14px;
+        }
+
+        .comparison-box {
+            padding: 18px 22px;
+            border-radius: 15px;
+        }
+
+        .comparison-box.traditional {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid #f59e0b;
+        }
+
+        .comparison-box.codex {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            border: 2px solid #22c55e;
+        }
+
+        .comparison-box h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+
+        .comparison-box p {
+            font-size: 1.15rem;
+            color: #374151;
+            line-height: 1.5;
+        }
+
+        .code-block {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 18px 22px;
+            border-radius: 12px;
+            margin-top: 14px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.05rem;
+            overflow-x: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 卡片网格样式 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 24px 28px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(59, 130, 246, 0.2);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            font-size: 1.15rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        /* 秘诀样式 */
+        .tips-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05));
+            padding: 20px 24px;
+            border-radius: 15px;
+            border-left: 5px solid #3b82f6;
+        }
+
+        .tip-box h4 {
+            font-size: 1.4rem;
+            color: #1e40af;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .tip-box p {
+            font-size: 1.2rem;
+            color: #475569;
+        }
+
+        /* 对比样式 */
+        .comparison-example {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .example-box {
+            padding: 18px 22px;
+            border-radius: 15px;
+        }
+
+        .example-box.bad {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            border: 2px solid #ef4444;
+        }
+
+        .example-box.good {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            border: 2px solid #22c55e;
+        }
+
+        .example-box h4 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .example-box.bad h4 {
+            color: #dc2626;
+        }
+
+        .example-box.good h4 {
+            color: #16a34a;
+        }
+
+        /* 三步曲样式 */
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px 24px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .step-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 15px 45px rgba(59, 130, 246, 0.15);
+        }
+
+        .step-number {
+            min-width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 900;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .step-content h3 {
+            font-size: 1.6rem;
+            color: #1e40af;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .step-content p {
+            font-size: 1.2rem;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        /* 安全边界样式 */
+        .safety-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .safety-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px 24px;
+            border-radius: 18px;
+            backdrop-filter: blur(10px);
+            border-top: 4px solid #3b82f6;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .safety-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.15);
+        }
+
+        .safety-card h3 {
+            font-size: 1.4rem;
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .safety-card p {
+            font-size: 1.15rem;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        /* 总结页样式 */
+        .summary-container {
+            text-align: center;
+        }
+
+        .summary-section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 28px 32px;
+            border-radius: 25px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .summary-section h3 {
+            font-size: 2rem;
+            color: #1e40af;
+            margin-bottom: 18px;
+            font-weight: 700;
+        }
+
+        .action-list {
+            list-style: none;
+            text-align: left;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .action-list li {
+            font-size: 1.35rem;
+            color: #334155;
+            margin-bottom: 16px;
+            padding: 16px 20px 16px 55px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(37, 99, 235, 0.04));
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .action-list li:hover {
+            transform: translateX(10px);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.08));
+        }
+
+        .action-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* 感谢页样式 */
+        .thank-you-slide {
+            text-align: center;
+        }
+
+        .thank-you-title {
+            font-size: 4.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .thank-you-message {
+            font-size: 1.8rem;
+            color: #475569;
+            margin-bottom: 35px;
+        }
+
+        .contact-info {
+            font-size: 1.4rem;
+            color: #64748b;
+        }
+
+        /* 垂直分页指示器 */
+        .pagination-container {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .pagination-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(30, 64, 175, 0.3);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .pagination-dot:hover {
+            background: rgba(30, 64, 175, 0.6);
+            transform: scale(1.3);
+        }
+
+        .pagination-dot.active {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            transform: scale(1.5);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+        }
+
+        .pagination-dot::after {
+            content: attr(data-page);
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(30, 64, 175, 0.9);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .pagination-dot:hover::after {
+            opacity: 1;
+        }
+
+        /* 隐藏导航箭头 */
+        .nav-arrow {
+            display: none;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #1e40af);
+            z-index: 200;
+            transition: width 0.3s ease;
+        }
+
+        /* 浮动装饰元素 */
+        .floating-shape {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0.1;
+            z-index: 1;
+        }
+
+        .shape-1 {
+            top: 10%;
+            left: 5%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+            animation: float1 8s ease-in-out infinite;
+        }
+
+        .shape-2 {
+            bottom: 15%;
+            right: 10%;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #60a5fa 0%, transparent 70%);
+            animation: float2 10s ease-in-out infinite;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(30px, 30px) rotate(180deg); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-20px, 20px) scale(1.1); }
+        }
+
+        /* 核心观点标签 */
+        .key-point {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            color: white;
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+            animation: keyPointPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes keyPointPulse {
+            0%, 100% { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4); }
+            50% { box-shadow: 0 10px 50px rgba(59, 130, 246, 0.6); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .slide {
+                padding: 40px 50px;
+            }
+
+            .cover-title {
+                font-size: 3.2rem;
+            }
+
+            .content-slide h2 {
+                font-size: 2.2rem;
+            }
+
+            .toc-list,
+            .card-grid,
+            .safety-grid,
+            .comparison-example {
+                grid-template-columns: 1fr;
+            }
+            
+            .slide-content {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 24px;
+            }
+            
+            .cover-title {
+                font-size: 2.4rem;
+            }
+            
+            .content-slide h2 {
+                font-size: 1.8rem;
+            }
+            
+            .toc-slide h2 {
+                font-size: 2rem;
+            }
+            
+            .slide-subtitle, .cover-subtitle {
+                font-size: 1.3rem;
+            }
+            
+            .content-list li {
+                font-size: 1.1rem;
+            }
+
+            .pagination-container {
+                right: 15px;
+            }
+        }
+
+        /* 动画进入效果 */
+        .animate-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+        .delay-5 { animation-delay: 0.5s; }
+    
+/* =========================
+   Optimized 16:9 Presentation Template
+   目标：16:9 一屏展示、字体更大、减少留白、避免截断
+   ========================= */
+
+:root {
+    --stage-max-w: 1600px;
+    --stage-radius: 26px;
+    --stage-shadow: 0 28px 80px rgba(37, 99, 235, 0.18);
+    --ink: #0f172a;
+    --muted: #475569;
+    --line: rgba(147, 197, 253, 0.35);
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(circle at 12% 8%, rgba(59,130,246,0.20), transparent 30%),
+        radial-gradient(circle at 88% 84%, rgba(96,165,250,0.22), transparent 34%),
+        linear-gradient(135deg, #f8fbff 0%, #dbeafe 100%);
+}
+
+.presentation-container {
+    width: min(100vw, calc(100vh * 16 / 9), var(--stage-max-w));
+    height: min(100vh, calc(100vw * 9 / 16), 900px);
+    aspect-ratio: 16 / 9;
+    margin: auto;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--stage-radius);
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: var(--stage-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.78);
+}
+
+.slides-wrapper {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    overflow: hidden;
+}
+
+.slide {
+    width: 100%;
+    height: 100%;
+    padding: clamp(26px, 3.2vw, 48px) clamp(44px, 5.6vw, 86px);
+    overflow: hidden;
+}
+
+.slide-content {
+    max-width: 1440px;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transform-origin: center center;
+}
+
+.cover-title,
+.thank-you-title {
+    font-size: clamp(4.8rem, 6vw, 7.2rem);
+    line-height: 1.02;
+    margin-bottom: 20px;
+}
+
+.cover-subtitle {
+    font-size: clamp(2.0rem, 2.6vw, 3.0rem);
+    line-height: 1.25;
+    margin-bottom: 42px;
+}
+
+.cover-speaker {
+    font-size: clamp(1.4rem, 1.7vw, 2rem);
+}
+
+.cover-date {
+    font-size: clamp(1.15rem, 1.35vw, 1.55rem);
+}
+
+.toc-slide h2,
+.content-slide h2 {
+    font-size: clamp(3.2rem, 4.2vw, 5.1rem);
+    line-height: 1.08;
+    margin-bottom: clamp(22px, 2.2vw, 34px);
+    color: var(--dark-blue);
+    letter-spacing: -0.04em;
+}
+
+.content-slide .subtitle {
+    font-size: clamp(1.55rem, 1.9vw, 2.2rem);
+    line-height: 1.35;
+    margin-bottom: 20px;
+}
+
+.content-list li {
+    font-size: clamp(1.28rem, 1.65vw, 2rem);
+    line-height: 1.46;
+    margin-bottom: clamp(12px, 1.1vw, 20px);
+    padding-left: 44px;
+}
+
+.content-list li::before {
+    top: 0.72em;
+    width: 13px;
+    height: 13px;
+}
+
+.toc-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(18px, 1.8vw, 28px);
+}
+
+.toc-item {
+    min-height: clamp(78px, 8.8vh, 104px);
+    padding: clamp(20px, 2vw, 28px) clamp(24px, 2.5vw, 36px);
+    border-radius: 22px;
+    font-size: clamp(1.35rem, 1.75vw, 2.15rem);
+    font-weight: 700;
+    border-left: 0;
+    border: 1px solid rgba(147, 197, 253, 0.42);
+    box-shadow: 0 18px 42px rgba(37, 99, 235, 0.08);
+}
+
+.toc-item:hover {
+    transform: translateY(-4px) scale(1.015);
+}
+
+.toc-item-number {
+    width: 42px;
+    height: 42px;
+    line-height: 42px;
+    font-size: 1.15rem;
+    margin-right: 18px;
+}
+
+.card-grid {
+    gap: clamp(22px, 2vw, 32px);
+    align-items: stretch;
+}
+
+.feature-card,
+.scenario-card,
+.summary-section,
+.step-item,
+.safety-card,
+.tip-box {
+    border-radius: 24px;
+    padding: clamp(26px, 2.4vw, 38px);
+    box-shadow: 0 20px 50px rgba(37, 99, 235, 0.10);
+    border: 1px solid rgba(147, 197, 253, 0.24);
+}
+
+.feature-card {
+    min-height: clamp(210px, 24vh, 300px);
+}
+
+.feature-card h3,
+.step-content h3,
+.safety-card h3,
+.scenario-title {
+    font-size: clamp(1.65rem, 2.0vw, 2.45rem);
+    line-height: 1.18;
+    margin-bottom: 14px;
+}
+
+.feature-card p,
+.step-content p,
+.safety-card p,
+.tip-box p,
+.comparison-box p,
+.example-box p {
+    font-size: clamp(1.18rem, 1.45vw, 1.72rem);
+    line-height: 1.48;
+}
+
+.scenario-card {
+    margin-bottom: 18px;
+}
+
+.comparison-grid,
+.comparison-example {
+    gap: clamp(22px, 2vw, 30px);
+}
+
+.comparison-box,
+.example-box {
+    border-radius: 20px;
+    padding: clamp(22px, 2vw, 30px);
+}
+
+.comparison-box h4,
+.example-box h4,
+.tip-box h4 {
+    font-size: clamp(1.35rem, 1.65vw, 2rem);
+}
+
+.code-block {
+    font-size: clamp(1.05rem, 1.2vw, 1.35rem);
+    line-height: 1.48;
+    padding: 20px 24px;
+    border-radius: 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.steps-container {
+    gap: clamp(20px, 2vw, 30px);
+}
+
+.step-item {
+    min-height: clamp(130px, 15vh, 180px);
+}
+
+.step-number {
+    min-width: 76px;
+    height: 76px;
+    font-size: 2.25rem;
+}
+
+.safety-grid {
+    gap: clamp(20px, 1.8vw, 28px);
+}
+
+.safety-card {
+    min-height: clamp(190px, 22vh, 260px);
+}
+
+.tips-container {
+    gap: clamp(18px, 1.6vw, 24px);
+}
+
+.tip-box {
+    min-height: clamp(100px, 12vh, 140px);
+}
+
+.key-point {
+    font-size: clamp(1.4rem, 1.75vw, 2.15rem);
+    padding: 14px 36px;
+    border-radius: 999px;
+}
+
+.summary-section h3 {
+    font-size: clamp(2.1rem, 2.7vw, 3.2rem);
+}
+
+.action-list li {
+    font-size: clamp(1.35rem, 1.65vw, 2rem);
+    line-height: 1.38;
+}
+
+.thank-you-message {
+    font-size: clamp(1.9rem, 2.4vw, 3rem);
+}
+
+.contact-info {
+    font-size: clamp(1.35rem, 1.7vw, 2rem);
+}
+
+.pagination-container {
+    right: clamp(14px, 1.5vw, 24px);
+    gap: 9px;
+}
+
+.pagination-dot {
+    width: 9px;
+    height: 9px;
+    background: rgba(30, 64, 175, 0.22);
+}
+
+.pagination-dot.active {
+    transform: scale(1.65);
+}
+
+.feature-card:hover,
+.scenario-card:hover,
+.safety-card:hover,
+.step-item:hover,
+.action-list li:hover {
+    transform: translateY(-4px);
+}
+
+.cover-title,
+.thank-you-title {
+    animation: titleBreath 4.8s ease-in-out infinite;
+}
+
+@keyframes titleBreath {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.slide-content.is-fit-scaled {
+    justify-content: center;
+}
+
+@media (max-width: 1024px) {
+    .presentation-container {
+        width: 100vw;
+        height: min(100vh, calc(100vw * 9 / 16));
+        border-radius: 0;
+    }
+
+    .slide {
+        padding: 28px 42px;
+    }
+}
+
+</style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+
+    <div class="presentation-container">
+        <div class="slides-wrapper" id="slidesWrapper">
+            <!-- 第1页：封面 -->
+            <div class="slide cover-slide active" data-slide="0">
+                <div class="slide-content">
+                    <h1 class="cover-title">AI 不只是聊天工具</h1>
+                    <p class="cover-subtitle">——用Codex解锁十倍工作效率</p>
+                    <p class="cover-speaker">演讲人：行政部 叶婷</p>
+                    <p class="cover-date">日期：2026年5月</p>
+                </div>
+            </div>
+
+            <!-- 第2页：目录 -->
+            <div class="slide toc-slide" data-slide="1">
+                <div class="slide-content">
+                    <h2 class="animate-in">目录</h2>
+                    <div class="toc-list">
+                        <div class="toc-item animate-in delay-1" onclick="goToSlide(2)">
+                            <span class="toc-item-number">1</span>重新认识AI：从聊天到生产力
+                        </div>
+                        <div class="toc-item animate-in delay-2" onclick="goToSlide(3)">
+                            <span class="toc-item-number">2</span>主角登场：认识Codex
+                        </div>
+                        <div class="toc-item animate-in delay-3" onclick="goToSlide(4)">
+                            <span class="toc-item-number">3</span>Codex深度实战（行政必看）
+                        </div>
+                        <div class="toc-item animate-in delay-4" onclick="goToSlide(10)">
+                            <span class="toc-item-number">4</span>辅助工具：Cursor与Cloud Code
+                        </div>
+                        <div class="toc-item animate-in delay-1" onclick="goToSlide(12)">
+                            <span class="toc-item-number">5</span>工作场景速查手册
+                        </div>
+                        <div class="toc-item animate-in delay-2" onclick="goToSlide(14)">
+                            <span class="toc-item-number">6</span>生活场景小妙招
+                        </div>
+                        <div class="toc-item animate-in delay-3" onclick="goToSlide(15)">
+                            <span class="toc-item-number">7</span>上手路径与安全边界
+                        </div>
+                        <div class="toc-item animate-in delay-4" onclick="goToSlide(18)">
+                            <span class="toc-item-number">8</span>总结与行动
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第3页：重新认识AI -->
+            <div class="slide content-slide" data-slide="2">
+                <div class="slide-content">
+                    <h2 class="animate-in">我们真的会用AI了吗？</h2>
+                    <ul class="content-list">
+                        <li class="animate-in delay-1">现状：多数同事已会用DeepSeek、豆包写简单文档</li>
+                        <li class="animate-in delay-2">但AI能做的远不止聊天和生成文字</li>
+                        <li class="animate-in delay-3">真正的效率炸弹——让AI帮你写代码、自动化办公、搭建小工具</li>
+                        <li class="animate-in delay-4">即使你是行政、市场、销售，零编程基础也能上手</li>
+                        <li class="animate-in delay-5">今天的主角：Codex（以及它的好搭档Cursor、Cloud Code）</li>
+                    </ul>
+                    <div class="key-point animate-in delay-5">核心观点：从问AI升级到让AI干活</div>
+                </div>
+            </div>
+
+            <!-- 第4页：为什么Codex值得关注 -->
+            <div class="slide content-slide" data-slide="3">
+                <div class="slide-content">
+                    <h2 class="animate-in">为什么Codex值得你关注？</h2>
+                    <ul class="content-list">
+                        <li class="animate-in delay-1">办公室里大量重复性工作：数据处理、文件整理、报表生成、信息录入</li>
+                        <li class="animate-in delay-2">手工操作耗时易错，找IT开发又要排期</li>
+                        <li class="animate-in delay-3">Codex让你用中文下命令，AI自动生成代码并运行</li>
+                        <li class="animate-in delay-4">你将获得：10分钟搞定以前半天的工作、不用学编程语言、告别复制粘贴100次</li>
+                    </ul>
+                    <div class="key-point animate-in delay-5">门槛比你想象的低，效率比你预想的高</div>
+                </div>
+            </div>
+
+            <!-- 第5页：Codex是什么 -->
+            <div class="slide content-slide" data-slide="4">
+                <div class="slide-content">
+                    <h2 class="animate-in">Codex：你的私人编程助理</h2>
+                    <div class="card-grid">
+                        <div class="feature-card animate-in delay-1">
+                            <h3>Codex是什么？</h3>
+                            <p>OpenAI推出的代码生成引擎，GPT-4已深度集成。你把需求用中文说出来，它输出可直接运行的代码。</p>
+                        </div>
+                        <div class="feature-card animate-in delay-2">
+                            <h3>怎么用？</h3>
+                            <p>打开ChatGPT（GPT-4），直接说写一段Python代码，复制代码到电脑，运行，完成。</p>
+                        </div>
+                        <div class="feature-card animate-in delay-3">
+                            <h3>它擅长什么？</h3>
+                            <p>文件批量重命名、格式转换、数据提取整理汇总、Word/Excel/PDF自动化处理、邮件批量生成、网页信息抓取。</p>
+                        </div>
+                        <div class="feature-card animate-in delay-4">
+                            <h3>一句话总结</h3>
+                            <p>Codex就是你的代码翻译官，中文进去，代码出来。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第6页：实战①批量合同整理 -->
+            <div class="slide content-slide" data-slide="5">
+                <div class="slide-content">
+                    <h2 class="animate-in">Codex实战①：批量合同整理</h2>
+                    <div class="scenario-card animate-in delay-1">
+                        <h3 class="scenario-title">场景：每月50份PDF合同，需按甲方名称+签订日期重命名归档</h3>
+                        <div class="comparison-grid">
+                            <div class="comparison-box traditional">
+                                <h4>传统做法</h4>
+                                <p>逐个右键重命名，2小时起步，眼花手酸</p>
+                            </div>
+                            <div class="comparison-box codex">
+                                <h4>Codex做法（5分钟）</h4>
+                                <p>1. 打开ChatGPT输入需求<br>2. 复制代码运行<br>3. 50个文件瞬间整齐排列</p>
+                            </div>
+                        </div>
+                        <div class="code-block">
+写一段Python代码，读取D:\合同\文件夹下所有PDF文件，提取文件名中的甲方名称和签订日期（格式如"XXX公司_2025.01.01"），将文件重命名为"甲方名称_签订日期.pdf"
+                        </div>
+                    </div>
+                    <p style="text-align: center; color: #22c55e; font-size: 1.35rem; font-weight: 600;" class="animate-in delay-2">你只需要：会复制、会粘贴、会双击</p>
+                </div>
+            </div>
+
+            <!-- 第7页：实战②客户信息提取 -->
+            <div class="slide content-slide" data-slide="6">
+                <div class="slide-content">
+                    <h2 class="animate-in">Codex实战②：客户信息提取</h2>
+                    <div class="scenario-card animate-in delay-1">
+                        <h3 class="scenario-title">场景：100份Word合同，需提取所有客户名称、联系方式到Excel</h3>
+                        <div class="comparison-grid">
+                            <div class="comparison-box traditional">
+                                <h4>传统做法</h4>
+                                <p>逐个打开、复制、粘贴，一上午没了</p>
+                            </div>
+                            <div class="comparison-box codex">
+                                <h4>Codex做法（3分钟）</h4>
+                                <p>1. 在ChatGPT中输入需求<br>2. 运行代码，Excel自动生成</p>
+                            </div>
+                        </div>
+                        <div class="code-block">
+写一段Python代码，读取D:\合同\文件夹下所有.docx文件，从每个文件中提取"甲方全称"和"联系电话"两个字段，汇总到一个Excel表格中，列名为"客户名称"和"联系方式"
+                        </div>
+                    </div>
+                    <p style="text-align: center; color: #1e40af; font-size: 1.35rem; font-weight: 600;" class="animate-in delay-2">举一反三：同样的方法，可以批量提取报价单、简历、问卷中的任何信息</p>
+                </div>
+            </div>
+
+            <!-- 第8页：实战③邮件批量生成 -->
+            <div class="slide content-slide" data-slide="7">
+                <div class="slide-content">
+                    <h2 class="animate-in">Codex实战③：邮件批量生成</h2>
+                    <div class="scenario-card animate-in delay-1">
+                        <h3 class="scenario-title">场景：通知50位供应商更新资质文件，每个邮件需带对方公司名和截止日期</h3>
+                        <div class="comparison-grid">
+                            <div class="comparison-box traditional">
+                                <h4>传统做法</h4>
+                                <p>逐个复制粘贴修改，1小时+</p>
+                            </div>
+                            <div class="comparison-box codex">
+                                <h4>Codex做法（10分钟）</h4>
+                                <p>1. 准备Excel：列名供应商名、联系人、邮箱、截止日期<br>2. 在ChatGPT中告诉Codex<br>3. 运行，批量生成邮件</p>
+                            </div>
+                        </div>
+                        <div class="code-block">
+读取这个Excel，为每一行生成一封邮件，主题为"关于更新资质文件的通知"，正文包含"尊敬的[供应商名]您好，请于[截止日期]前完成资质更新"，保存为.eml草稿文件
+                        </div>
+                    </div>
+                    <p style="text-align: center; color: #22c55e; font-size: 1.35rem; font-weight: 600;" class="animate-in delay-2">50封邮件，10分钟搞定，零出错</p>
+                </div>
+            </div>
+
+            <!-- 第9页：实战④数据报表一键生成 -->
+            <div class="slide content-slide" data-slide="8">
+                <div class="slide-content">
+                    <h2 class="animate-in">Codex实战④：数据报表一键生成</h2>
+                    <div class="scenario-card animate-in delay-1">
+                        <h3 class="scenario-title">场景：行政季度满意度调查，200份Excel结果需统计平均分、各部门对比</h3>
+                        <div class="comparison-grid">
+                            <div class="comparison-box traditional">
+                                <h4>传统做法</h4>
+                                <p>数小时拉公式、做透视表、画图表</p>
+                            </div>
+                            <div class="comparison-box codex">
+                                <h4>Codex做法（5分钟）</h4>
+                                <p>1. 在ChatGPT中输入需求<br>2. 运行，图表和统计结果一次性输出</p>
+                            </div>
+                        </div>
+                        <div class="code-block">
+写一段Python代码，读取D:\调查结果.xlsx中第3列"满意度评分"，计算整体平均分、各部门平均分，生成一个柱状图（蓝色，标题"各部门满意度对比"），保存为png
+                        </div>
+                    </div>
+                    <p style="text-align: center; color: #1e40af; font-size: 1.35rem; font-weight: 600;" class="animate-in delay-2">即使完全不懂Excel函数，跟着AI提示就能做出专业报表</p>
+                </div>
+            </div>
+
+            <!-- 第10页：提示词秘诀 -->
+            <div class="slide content-slide" data-slide="9">
+                <div class="slide-content">
+                    <h2 class="animate-in">Codex写好提示词的秘诀</h2>
+                    <div class="tips-container">
+                        <div class="tip-box animate-in delay-1">
+                            <h4>1. 明确角色</h4>
+                            <p>你是一个Python编程专家……</p>
+                        </div>
+                        <div class="tip-box animate-in delay-2">
+                            <h4>2. 给出上下文</h4>
+                            <p>我有一个Excel文件，放在D盘，列名是……</p>
+                        </div>
+                        <div class="tip-box animate-in delay-3">
+                            <h4>3. 指定输出格式</h4>
+                            <p>请输出完整的Python代码，加上中文注释</p>
+                        </div>
+                        <div class="tip-box animate-in delay-4">
+                            <h4>4. 提供例子</h4>
+                            <p>如果公司名是"阿里巴巴"，输出格式应为"阿里_合同.pdf"</p>
+                        </div>
+                    </div>
+                    <div class="comparison-example" style="margin-top: 20px;">
+                        
+                       
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- 第11页：Cursor -->
+            <div class="slide content-slide" data-slide="10">
+                <div class="slide-content">
+                    <h2 class="animate-in">辅助工具① Cursor：像聊天一样写代码</h2>
+                    <div class="card-grid">
+                        <div class="feature-card animate-in delay-1">
+                            <h3>Cursor是什么？</h3>
+                            <p>AI原生代码编辑器（基于VS Code），安装即用。按Ctrl+K打开对话框，用中文描述需求。AI自动生成代码，并解释每一行。</p>
+                        </div>
+                        <div class="feature-card animate-in delay-2">
+                            <h3>行政适用场景</h3>
+                            <p>想要一个可视化界面（比如加班申请网页）、需要反复修改调试的脚本、边写边看效果的需求。</p>
+                        </div>
+                    </div>
+                    <div class="key-point animate-in delay-3" style="margin-top: 20px;">和Codex的关系：Codex生成代码片段，Cursor帮你管理和运行整个项目</div>
+                </div>
+            </div>
+
+            <!-- 第12页：Cloud Code -->
+            <div class="slide content-slide" data-slide="11">
+                <div class="slide-content">
+                    <h2 class="animate-in">辅助工具② Cloud Code：搭建专属小应用</h2>
+                    <div class="card-grid">
+                        <div class="feature-card animate-in delay-1">
+                            <h3>Cloud Code是什么？</h3>
+                            <p>Google Cloud的AI开发插件。直接开发并部署到云端，生成可访问的网址。</p>
+                        </div>
+                        <div class="feature-card animate-in delay-2">
+                            <h3>行政适用场景</h3>
+                            <p>会议室预约页面、物品领用登记系统、内部FAQ问答机器人、问卷收集与自动统计。</p>
+                        </div>
+                    </div>
+                    <div class="scenario-card animate-in delay-3" style="margin-top: 20px;">
+                        <h3 class="scenario-title">实战案例：搭一个"行政问答机器人"</h3>
+                        <ul class="content-list" style="margin-top: 20px;">
+                            <li>1. 收集常见问题（请假流程、报销规范）和标准答案</li>
+                            <li>2. 在Cloud Code中用AI生成问答网页</li>
+                            <li>3. 部署后链接发到群里，同事自助查询</li>
+                            <li>4. 24小时在线，行政从此不用当"复读机"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第13页：工作场景速查① -->
+            <div class="slide content-slide" data-slide="12">
+                <div class="slide-content">
+                    <h2 class="animate-in">工作场景速查手册①</h2>
+                    <div class="card-grid">
+                        <div class="feature-card animate-in delay-1">
+                            <h3>会议纪要智能排版</h3>
+                            <p><strong>传统：</strong>录音→手动转文字→整理格式→发送（1小时）<br><strong>AI版：</strong>飞书/钉钉转文字→ChatGPT整理为议题/结论/待办表格→直接发送（5分钟）</p>
+                        </div>
+                        <div class="feature-card animate-in delay-2">
+                            <h3>数据清洗与可视化</h3>
+                            <p><strong>传统：</strong>Excel拉公式、透视表（数小时）<br><strong>AI版：</strong>把Excel拖给Cursor，描述需求，AI生成代码并运行（5分钟）</p>
+                        </div>
+                        <div class="feature-card animate-in delay-3">
+                            <h3>文件格式批量转换</h3>
+                            <p><strong>传统：</strong>逐个打开另存为<br><strong>AI版：</strong>Codex写脚本，一键转换100个文件</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第14页：工作场景速查② -->
+            <div class="slide content-slide" data-slide="13">
+                <div class="slide-content">
+                    <h2 class="animate-in">工作场景速查手册②</h2>
+                    <div class="card-grid">
+                        <div class="feature-card animate-in delay-1">
+                            <h3>内部知识库搭建</h3>
+                            <p><strong>痛点：</strong>新人总问重复问题<br><strong>AI方案：</strong>Cloud Code搭建FAQ机器人，24小时自助查询</p>
+                        </div>
+                        <div class="feature-card animate-in delay-2">
+                            <h3>行政通知自动生成</h3>
+                            <p><strong>传统：</strong>每次手动拟通知、排版、发送<br><strong>AI方案：</strong>ChatGPT一次性生成通知模板+Codex批量发送</p>
+                        </div>
+                        <div class="feature-card animate-in delay-3">
+                            <h3>访客登记自动化</h3>
+                            <p><strong>传统：</strong>纸质登记+手动录入<br><strong>AI方案：</strong>Cloud Code生成登记页面，数据自动汇总到表格</p>
+                        </div>
+                    </div>
+                    <div class="key-point animate-in delay-4" style="margin-top: 20px;">原则：任何重复做超过3次的工作，都值得用AI自动化</div>
+                </div>
+            </div>
+
+            <!-- 第15页：生活场景小妙招 -->
+            <div class="slide content-slide" data-slide="14">
+                <div class="slide-content">
+                    <h2 class="animate-in">生活场景小妙招</h2>
+                    <div class="card-grid">
+                        <div class="feature-card animate-in delay-1">
+                            <h3>家庭开支分析</h3>
+                            <p>支付宝/微信导出账单CSV，告诉Codex：按分类统计每月支出，生成饼图，找出占比最高的三项。每月自动分析，理财小白也能专业管钱。</p>
+                        </div>
+                        <div class="feature-card animate-in delay-2">
+                            <h3>旅行攻略一键生成</h3>
+                            <p>DeepSeek问：成都5天4晚家庭游，儿童友好景点，详细行程。AI生成文字攻略+封面图+天气提醒脚本，输出PDF分享给家人。</p>
+                        </div>
+                        <div class="feature-card animate-in delay-3">
+                            <h3>购物比价助手</h3>
+                            <p>让Codex写脚本，抓取商品价格信息，自动汇总比价，省钱省时间。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第16页：小白上手三部曲 -->
+            <div class="slide content-slide" data-slide="15">
+                <div class="slide-content">
+                    <h2 class="animate-in">小白上手三部曲</h2>
+                    <div class="steps-container">
+                        <div class="step-item animate-in delay-1">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>心态准备</h3>
+                                <p>别怕代码，AI是你的翻译官，你只管用中文描述需求</p>
+                            </div>
+                        </div>
+                        <div class="step-item animate-in delay-2">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>环境准备</h3>
+                                <p>安装Python（官网一键安装，全程"下一步"）、注册ChatGPT账号（已有DeepSeek也可）、安装Cursor（官网下载，免费）</p>
+                            </div>
+                        </div>
+                        <div class="step-item animate-in delay-3">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>首次尝试</h3>
+                                <p>从本PPT任一案例复制提示词开始，运行成功一个，信心就来了。遇到报错？直接把错误信息丢回给AI，它会帮你改</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="key-point animate-in delay-4" style="margin-top: 20px;">今天就能完成你的第一个自动化脚本</div>
+                </div>
+            </div>
+
+            <!-- 第17页：安全与边界 -->
+            <div class="slide content-slide" data-slide="16">
+                <div class="slide-content">
+                    <h2 class="animate-in">安全与边界</h2>
+                    <div class="safety-grid">
+                        <div class="safety-card animate-in delay-1">
+                            <h3>数据隐私</h3>
+                            <p>涉及员工信息、合同、财务数据，优先使用本地运行（本地Python+Cursor），不要将敏感数据上传到公有云AI平台。</p>
+                        </div>
+                        <div class="safety-card animate-in delay-2">
+                            <h3>代码审查</h3>
+                            <p>AI生成的代码执行前最好扫一眼，确保不会误删文件、误发邮件。</p>
+                        </div>
+                        <div class="safety-card animate-in delay-3">
+                            <h3>合规提醒</h3>
+                            <p>批量发送邮件前，确认符合公司信息安全规定。搭建内部网页时，设置访问密码，不对外开放。</p>
+                        </div>
+                        <div class="safety-card animate-in delay-4">
+                            <h3>权限控制</h3>
+                            <p>自动化脚本仅在个人工作目录运行，涉及共享文件夹操作前，先做备份。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第18页：完整案例 -->
+            <div class="slide content-slide" data-slide="17">
+                <div class="slide-content">
+                    <h2 class="animate-in">完整案例：行政周报自动生成器</h2>
+                    <div class="scenario-card animate-in delay-1">
+                        <h3 class="scenario-title">需求：每周五收集各部门周报，自动合并为总周报</h3>
+                        <div class="card-grid" style="margin-top: 20px;">
+                            <div style="grid-column: 1 / -1;">
+                                <h4 style="color: #1e40af; font-size: 1.35rem; margin-bottom: 12px; font-weight: 700;">实现步骤：</h4>
+                                <ul class="content-list">
+                                    <li>1. 各部门周报放共享文件夹（统一命名规则）</li>
+                                    <li>2. 用Codex生成脚本：读取所有文档，提取"本周重点""下周计划"段落</li>
+                                    <li>3. 合并为一个Word文档，自动添加封面和目录</li>
+                                    <li>4. 可选：自动发送邮件给经理</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="comparison-grid" style="margin-top: 18px;">
+                            <div class="comparison-box traditional">
+                                <h4>以前</h4>
+                                <p>周五下午手动整理，加班2小时</p>
+                            </div>
+                            <div class="comparison-box codex">
+                                <h4>现在</h4>
+                                <p>一键执行，5分钟审核发送</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第19页：总结与行动 -->
+            <div class="slide content-slide" data-slide="18">
+                <div class="slide-content summary-container">
+                    <div class="summary-section animate-in">
+                        <h3>今天你学到了</h3>
+                        <ul class="content-list" style="text-align: left; max-width: 800px; margin: 0 auto;">
+                            <li>AI不只是聊天工具，Codex让你用中文指挥代码</li>
+                            <li>文件处理、数据统计、邮件发送……重复工作都能自动化</li>
+                            <li>零基础也能上手，关键是迈出第一步</li>
+                        </ul>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- 第20页：感谢页 -->
+            <div class="slide thank-you-slide" data-slide="19">
+                <div class="slide-content">
+                    <h1 class="thank-you-title">感谢聆听</h1>
+                    <p class="thank-you-message">让我们一起，把AI变成最得力的助手</p>
+                    <p class="contact-info">交流联系：行政部 叶婷</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 垂直分页指示器 -->
+        <div class="pagination-container" id="pagination"></div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const paginationContainer = document.getElementById('pagination');
+        const progressBar = document.getElementById('progressBar');
+
+
+        // 自动缩放当前页内容，确保每页都能在 16:9 画布内完整展示，避免截断
+        function fitSlideContent(slide) {
+            const content = slide.querySelector('.slide-content');
+            if (!content) return;
+
+            content.style.transform = 'none';
+            content.classList.remove('is-fit-scaled');
+
+            const slideRect = slide.getBoundingClientRect();
+            const contentRect = content.getBoundingClientRect();
+            const availableW = slideRect.width - 8;
+            const availableH = slideRect.height - 8;
+
+            const scaleW = availableW / contentRect.width;
+            const scaleH = availableH / content.scrollHeight;
+            const scale = Math.min(1, scaleW, scaleH);
+
+            if (scale < 0.995) {
+                content.style.transform = `scale(${scale})`;
+                content.classList.add('is-fit-scaled');
+            }
+        }
+
+        function fitCurrentSlide() {
+            fitSlideContent(slides[currentSlide]);
+        }
+
+        // 初始化分页指示器
+        function initPagination() {
+            const pageNames = [
+                '封面', '目录', '重新认识AI', '为什么Codex', 'Codex介绍',
+                '批量合同整理', '客户信息提取', '邮件批量生成', '数据报表', '提示词秘诀',
+                'Cursor', 'Cloud Code', '速查手册①', '速查手册②', '生活妙招',
+                '上手三部曲', '安全边界', '完整案例', '总结行动', '感谢'
+            ];
+            
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'pagination-dot' + (i === 0 ? ' active' : '');
+                dot.setAttribute('data-page', pageNames[i]);
+                dot.addEventListener('click', () => goToSlide(i));
+                paginationContainer.appendChild(dot);
+            }
+        }
+
+        // 更新进度条
+        function updateProgressBar() {
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        // 更新分页指示器
+        function updatePagination() {
+            const dots = document.querySelectorAll('.pagination-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        // 重置页面动画
+        function resetAnimations(slide) {
+            const animatedElements = slide.querySelectorAll('.animate-in');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight;
+                el.style.animation = '';
+            });
+        }
+
+        // 切换到指定幻灯片
+        function goToSlide(index) {
+            if (index < 0 || index >= totalSlides || index === currentSlide) return;
+            
+            slides[currentSlide].classList.remove('active');
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
+            
+            resetAnimations(slides[currentSlide]);
+            updatePagination();
+            updateProgressBar();
+            requestAnimationFrame(fitCurrentSlide);
+        }
+
+        // 键盘导航
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+                goToSlide(currentSlide + 1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                goToSlide(currentSlide - 1);
+            } else if (e.key === 'Home') {
+                goToSlide(0);
+            } else if (e.key === 'End') {
+                goToSlide(totalSlides - 1);
+            }
+        });
+
+        // 鼠标滚轮导航
+        let wheelTimeout;
+        document.addEventListener('wheel', (e) => {
+            clearTimeout(wheelTimeout);
+            wheelTimeout = setTimeout(() => {
+                if (e.deltaY > 0) {
+                    goToSlide(currentSlide + 1);
+                } else {
+                    goToSlide(currentSlide - 1);
+                }
+            }, 50);
+        }, { passive: true });
+
+        // 触摸滑动支持
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartY - touchEndY;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    goToSlide(currentSlide + 1);
+                } else {
+                    goToSlide(currentSlide - 1);
+                }
+            }
+        }
+
+        // 初始化
+        initPagination();
+        updateProgressBar();
+        window.addEventListener('resize', fitCurrentSlide);
+        requestAnimationFrame(fitCurrentSlide);
+    </script>
+</body>
+</html>
